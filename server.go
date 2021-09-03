@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -30,11 +31,16 @@ func main() {
 		middlewares.BasicAuth(), gindump.Dump())
 
 	server.GET("/videos", func(c *gin.Context) {
-		c.JSON(200, videoController.FindAll())
+		c.JSON(http.StatusOK, videoController.FindAll())
 	})
 
 	server.POST("/videos", func(c *gin.Context) {
-		c.JSON(200, videoController.Save(c))
+		err := videoController.Save(c)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"message": "Video saved successfully"})
+		}
 	})
 
 	server.Run(":8080")
