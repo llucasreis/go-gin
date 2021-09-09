@@ -30,10 +30,9 @@ func main() {
 	server.Static("/css", "./templates/css")
 	server.LoadHTMLGlob("templates/*.html")
 
-	server.Use(gin.Recovery(), middlewares.Logger(),
-		middlewares.BasicAuth(), gindump.Dump())
+	server.Use(gin.Recovery(), middlewares.Logger(), gindump.Dump())
 
-	apiRoutes := server.Group("/api")
+	apiRoutes := server.Group("/api", middlewares.BasicAuth())
 	{
 		apiRoutes.GET("/videos", func(c *gin.Context) {
 			c.JSON(http.StatusOK, videoController.FindAll())
@@ -54,5 +53,11 @@ func main() {
 		viewRoutes.GET("/videos", videoController.ShowAll)
 	}
 
-	server.Run(":8080")
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "5000"
+	}
+
+	server.Run(":" + port)
 }
